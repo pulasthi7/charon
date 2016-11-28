@@ -46,6 +46,7 @@ import org.apache.commons.logging.Log;
 import org.wso2.charon.core.util.AttributeUtil;
 import org.wso2.charon.core.util.CopyUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -280,7 +281,56 @@ public class UserResourceEndpoint extends AbstractResourceEndpoint {
 
     public SCIMResponse listByAttribute(String searchAttribute, UserManager userManager,
                                         String format) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+        Encoder encoder = null;
+        try {
+            encoder = getEncoder(SCIMConstants.identifyFormat(format));
+            List<User> returnedUsers = null;
+            String[] attribs;
+            if (searchAttribute.contains(",")) {
+                attribs = searchAttribute.split(",");
+            } else {
+                attribs = new String[]{searchAttribute};
+            }
+
+            List<String> claimURIsList = new ArrayList<>();
+            for (String attrib : attribs) {
+                String attributeURI = AttributeUtil.getAttributeURI(attrib.trim());
+                if (attributeURI != null) {
+                    claimURIsList.add(attributeURI);
+                }
+            }
+            returnedUsers = userManager.listUsersByAttributes(claimURIsList);
+
+            if (returnedUsers == null || returnedUsers.isEmpty()) {
+                throw new ResourceNotFoundException("No users found.");
+            }
+            //create a listed resource object out of the returned users list.
+            ListedResource listedResource = createListedResource(returnedUsers);
+            //convert the listed resource into specific format.
+            String encodedListedResource = encoder.encodeSCIMObject(listedResource);
+            //if there are any http headers to be added in the response header.
+            Map<String, String> httpHeaders = new HashMap<String, String>();
+            httpHeaders.put(SCIMConstants.CONTENT_TYPE_HEADER, format);
+            return new SCIMResponse(ResponseCodeConstants.CODE_OK, encodedListedResource, httpHeaders);
+        } catch (FormatNotSupportedException e) {
+            logger.debug(String.format("Format %s is not supported", format), e);
+            return AbstractResourceEndpoint.encodeSCIMException(encoder, e);
+        } catch (CharonException e) {
+            logger.error("Internal server error.", e);
+            //we have charon exceptions also, instead of having only internal server error exceptions,
+            //because inside API code throws CharonException.
+            if (e.getCode() == -1) {
+                e.setCode(ResponseCodeConstants.CODE_INTERNAL_SERVER_ERROR);
+            }
+            return AbstractResourceEndpoint.encodeSCIMException(encoder, e);
+        } catch (NotFoundException e) {
+            logger.error("Could not create listed users ", e);
+            return AbstractResourceEndpoint.encodeSCIMException(encoder, e);
+        } catch (ResourceNotFoundException e) {
+            logger.debug("No users found.", e);
+            return AbstractResourceEndpoint.encodeSCIMException(encoder, e);
+        }
     }
 
 

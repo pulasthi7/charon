@@ -57,6 +57,12 @@ public class FSBasedUserManager implements UserManager {
     }
 
     @Override
+    public List<User> listUsersByAttributes(List<String> attributeURIs) {
+
+        return null;
+    }
+
+    @Override
     public List<User> listUsersByFilter(String filter, String operation, String value)
             throws CharonException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.

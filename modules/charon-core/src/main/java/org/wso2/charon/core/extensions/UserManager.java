@@ -55,6 +55,8 @@ public interface UserManager extends Storage {
 
     public List<User> listUsersByAttribute(Attribute attribute);
 
+    public List<User> listUsersByAttributes(List<String> attributeURIs) throws CharonException;
+
     public List<User> listUsersByFilter(String filter, String operation, String value)
             throws CharonException;
 
