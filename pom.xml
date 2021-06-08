@@ -329,10 +329,11 @@
         <jacoco.version>0.8.6</jacoco.version>
         <mockito.version>3.10.0</mockito.version>
 
-        <sonar.projectKey>wso2_charon</sonar.projectKey>
-        <sonar.moduleKey>${artifactId}</sonar.moduleKey>
-        <sonar.organization>wso2</sonar.organization>
+        <sonar.projectKey>pulasthi7_charon</sonar.projectKey>
+        <sonar.organization>pulasthi7</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+
+        <sonar.moduleKey>${artifactId}</sonar.moduleKey>
     </properties>
 
 </project>
